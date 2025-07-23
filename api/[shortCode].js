@@ -1,11 +1,11 @@
 // 重定向处理
-const urlDatabase = new Map();
+global.urlDatabase = global.urlDatabase || new Map();
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   const { shortCode } = req.query;
   
   // 从数据库获取原始URL
-  const originalUrl = urlDatabase.get(shortCode);
+  const originalUrl = global.urlDatabase.get(shortCode);
   
   if (!originalUrl) {
     return res.status(404).json({ error: '短链接不存在' });
@@ -13,4 +13,4 @@ export default function handler(req, res) {
 
   // 重定向到原始URL
   res.redirect(302, originalUrl);
-}
+};

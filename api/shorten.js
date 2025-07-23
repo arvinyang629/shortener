@@ -1,9 +1,9 @@
-import { nanoid } from 'nanoid';
+const { nanoid } = require('nanoid');
 
-// 简单的内存存储（生产环境建议使用数据库）
-const urlDatabase = new Map();
+// 使用全局变量模拟简单存储
+global.urlDatabase = global.urlDatabase || new Map();
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   // 设置 CORS 头
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -29,7 +29,7 @@ export default function handler(req, res) {
 
     // 生成短码
     const shortCode = nanoid(6);
-    urlDatabase.set(shortCode, url);
+    global.urlDatabase.set(shortCode, url);
 
     const shortUrl = `${req.headers.host}/${shortCode}`;
     
@@ -41,4 +41,4 @@ export default function handler(req, res) {
   }
 
   return res.status(405).json({ error: '方法不允许' });
-}
+};

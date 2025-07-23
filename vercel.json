@@ -1,16 +1,16 @@
 {
   "functions": {
     "api/shorten.js": {
-      "runtime": "@vercel/node"
+      "runtime": "nodejs18.x"
     },
     "api/[shortCode].js": {
-      "runtime": "@vercel/node"
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [
     {
       "source": "/",
-      "destination": "/public/index.html"
+      "destination": "/index.html"
     }
   ]
 }
