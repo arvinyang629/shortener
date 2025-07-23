@@ -1,0 +1,16 @@
+{
+  "functions": {
+    "api/shorten.js": {
+      "runtime": "@vercel/node"
+    },
+    "api/[shortCode].js": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/public/index.html"
+    }
+  ]
+}

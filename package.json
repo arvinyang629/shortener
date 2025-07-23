@@ -1,0 +1,16 @@
+{
+  "name": "simple-url-shortener",
+  "version": "1.0.0",
+  "description": "简单的短链接服务",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'"
+  },
+  "dependencies": {
+    "nanoid": "^3.3.7"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
