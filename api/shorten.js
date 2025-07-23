@@ -1,7 +1,3 @@
-const { nanoid } = require('nanoid');
-const fs = require('fs');
-const path = require('path');
-
 module.exports = function handler(req, res) {
   // 设置 CORS 头
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -26,35 +22,24 @@ module.exports = function handler(req, res) {
       return res.status(400).json({ error: '无效的URL格式' });
     }
 
-    // 生成短码
-    const shortCode = nanoid(6);
-    
-    try {
-      // 读取现有数据
-      const dataPath = path.join(process.cwd(), 'data', 'urls.json');
-      let urlDatabase = {};
-      
-      if (fs.existsSync(dataPath)) {
-        const data = fs.readFileSync(dataPath, 'utf8');
-        urlDatabase = JSON.parse(data);
-      }
-      
-      // 存储新的映射
-      urlDatabase[shortCode] = url;
-      
-      // 写回文件
-      fs.writeFileSync(dataPath, JSON.stringify(urlDatabase, null, 2));
-      
-      const shortUrl = `${req.headers.host}/${shortCode}`;
-      
-      return res.json({
-        shortUrl: `https://${shortUrl}`,
-        shortCode,
-        originalUrl: url
+    // 使用完整的 Base64 编码作为短码（URL安全版本）
+    const encodedUrl = Buffer.from(url).toString('base64')
+      .replace(/[+/=]/g, (match) => {
+        switch (match) {
+          case '+': return '-';
+          case '/': return '_';
+          case '=': return '';
+          default: return match;
+        }
       });
-    } catch (error) {
-      return res.status(500).json({ error: '服务器错误' });
-    }
+    
+    const shortUrl = `${req.headers.host}/${encodedUrl}`;
+    
+    return res.json({
+      shortUrl: `https://${shortUrl}`,
+      shortCode: encodedUrl,
+      originalUrl: url
+    });
   }
 
   return res.status(405).json({ error: '方法不允许' });

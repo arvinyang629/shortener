@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-
 module.exports = function handler(req, res) {
   const { shortCode } = req.query;
   
@@ -9,23 +6,26 @@ module.exports = function handler(req, res) {
   }
 
   try {
-    // 读取数据文件
-    const dataPath = path.join(process.cwd(), 'data', 'urls.json');
+    // 解码短码获取原始URL
+    let encodedUrl = shortCode;
     
-    if (!fs.existsSync(dataPath)) {
-      return res.status(404).json({ error: '短链接不存在' });
+    // 还原 Base64 字符
+    encodedUrl = encodedUrl.replace(/[-_]/g, (match) => {
+      switch (match) {
+        case '-': return '+';
+        case '_': return '/';
+        default: return match;
+      }
+    });
+    
+    // 补充可能缺失的 padding
+    while (encodedUrl.length % 4) {
+      encodedUrl += '=';
     }
     
-    const data = fs.readFileSync(dataPath, 'utf8');
-    const urlDatabase = JSON.parse(data);
+    const originalUrl = Buffer.from(encodedUrl, 'base64').toString('utf-8');
     
-    const originalUrl = urlDatabase[shortCode];
-    
-    if (!originalUrl) {
-      return res.status(404).json({ error: '短链接不存在' });
-    }
-    
-    // 验证URL格式
+    // 验证解码后的URL
     new URL(originalUrl);
     
     // 重定向到原始URL
