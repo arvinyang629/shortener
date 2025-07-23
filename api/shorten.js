@@ -1,3 +1,8 @@
+const crypto = require('crypto');
+
+// 使用全局变量存储映射（简单方案）
+global.urlDatabase = global.urlDatabase || new Map();
+
 module.exports = function handler(req, res) {
   // 设置 CORS 头
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,22 +27,18 @@ module.exports = function handler(req, res) {
       return res.status(400).json({ error: '无效的URL格式' });
     }
 
-    // 使用完整的 Base64 编码作为短码（URL安全版本）
-    const encodedUrl = Buffer.from(url).toString('base64')
-      .replace(/[+/=]/g, (match) => {
-        switch (match) {
-          case '+': return '-';
-          case '/': return '_';
-          case '=': return '';
-          default: return match;
-        }
-      });
+    // 生成短码：使用 URL 的 MD5 哈希的前6位
+    const hash = crypto.createHash('md5').update(url).digest('hex');
+    const shortCode = hash.substring(0, 6);
     
-    const shortUrl = `${req.headers.host}/${encodedUrl}`;
+    // 存储映射
+    global.urlDatabase.set(shortCode, url);
+    
+    const shortUrl = `${req.headers.host}/${shortCode}`;
     
     return res.json({
       shortUrl: `https://${shortUrl}`,
-      shortCode: encodedUrl,
+      shortCode,
       originalUrl: url
     });
   }

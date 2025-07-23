@@ -1,3 +1,6 @@
+// 使用全局变量存储映射（简单方案）
+global.urlDatabase = global.urlDatabase || new Map();
+
 module.exports = function handler(req, res) {
   const { shortCode } = req.query;
   
@@ -5,27 +8,15 @@ module.exports = function handler(req, res) {
     return res.status(404).json({ error: '短链接不存在' });
   }
 
+  // 从存储中获取原始URL
+  const originalUrl = global.urlDatabase.get(shortCode);
+  
+  if (!originalUrl) {
+    return res.status(404).json({ error: '短链接不存在或已过期' });
+  }
+
   try {
-    // 解码短码获取原始URL
-    let encodedUrl = shortCode;
-    
-    // 还原 Base64 字符
-    encodedUrl = encodedUrl.replace(/[-_]/g, (match) => {
-      switch (match) {
-        case '-': return '+';
-        case '_': return '/';
-        default: return match;
-      }
-    });
-    
-    // 补充可能缺失的 padding
-    while (encodedUrl.length % 4) {
-      encodedUrl += '=';
-    }
-    
-    const originalUrl = Buffer.from(encodedUrl, 'base64').toString('utf-8');
-    
-    // 验证解码后的URL
+    // 验证URL格式
     new URL(originalUrl);
     
     // 重定向到原始URL
