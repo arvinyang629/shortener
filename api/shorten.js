@@ -1,7 +1,6 @@
 const { nanoid } = require('nanoid');
-
-// 使用全局变量模拟简单存储
-global.urlDatabase = global.urlDatabase || new Map();
+const fs = require('fs');
+const path = require('path');
 
 module.exports = function handler(req, res) {
   // 设置 CORS 头
@@ -29,15 +28,33 @@ module.exports = function handler(req, res) {
 
     // 生成短码
     const shortCode = nanoid(6);
-    global.urlDatabase.set(shortCode, url);
-
-    const shortUrl = `${req.headers.host}/${shortCode}`;
     
-    return res.json({
-      shortUrl: `https://${shortUrl}`,
-      shortCode,
-      originalUrl: url
-    });
+    try {
+      // 读取现有数据
+      const dataPath = path.join(process.cwd(), 'data', 'urls.json');
+      let urlDatabase = {};
+      
+      if (fs.existsSync(dataPath)) {
+        const data = fs.readFileSync(dataPath, 'utf8');
+        urlDatabase = JSON.parse(data);
+      }
+      
+      // 存储新的映射
+      urlDatabase[shortCode] = url;
+      
+      // 写回文件
+      fs.writeFileSync(dataPath, JSON.stringify(urlDatabase, null, 2));
+      
+      const shortUrl = `${req.headers.host}/${shortCode}`;
+      
+      return res.json({
+        shortUrl: `https://${shortUrl}`,
+        shortCode,
+        originalUrl: url
+      });
+    } catch (error) {
+      return res.status(500).json({ error: '服务器错误' });
+    }
   }
 
   return res.status(405).json({ error: '方法不允许' });

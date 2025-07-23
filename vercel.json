@@ -5,12 +5,8 @@
       "destination": "/index.html"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
       "source": "/([a-zA-Z0-9_-]+)",
-      "destination": "/api/$1"
+      "destination": "/api/[shortCode]?shortCode=$1"
     }
   ]
 }
